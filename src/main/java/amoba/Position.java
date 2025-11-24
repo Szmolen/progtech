@@ -35,7 +35,11 @@ public final class Position { //Value O. - final - nem örökölhető
         //új pozíció ezekkel az értékekkel (pl a1 - 0,0)
         return new Position(row, col);
     }
-
+    public String toAlgebraic() {
+        char colLetter = (char) ('a' + col);
+        int rowNumber = row + 1;
+        return "" + colLetter + rowNumber;
+    }
     //összehasonlítás
     @Override
     public boolean equals(Object o) {

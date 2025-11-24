@@ -3,8 +3,8 @@ package amoba;
 public class Main {
     public static void main(String[] args) {
 
-        int rows = 5;
-        int cols = 5;
+        int rows = 10;
+        int cols = 10;
 
         // Player teszt
         System.out.println("Player teszt");
@@ -46,12 +46,19 @@ public class Main {
         //Board board = new Board(10,10); // alap 10x10 táblát hoz létre
         Board board = new Board(rows,cols); // custom táblát hoz létre
 
-
         System.out.println("Üres tábla:");
         System.out.println(board);  // toString() hívódik → pontokkal kirajzolja a mezőket
 
-        // X középre
+        // első X 1,1-be - sikeres lépés
         board.place(new Position(1, 1), Player.X);
+
+        // X  1 1 be - fail kell legyen
+        try {
+            board.place(new Position(1, 1), Player.X); // második próbálkozás ugyanoda
+            System.out.println("HIBA: sikerült kétszer ugyanoda lépni!");
+        } catch (IllegalArgumentException e) {
+            System.out.println("Nem sikerült a lépés, mert foglalt: (b2) (1,1)");
+        }
 
         // O bal felső sarokba
         board.place(new Position(0, 0), Player.O);
@@ -64,27 +71,54 @@ public class Main {
 
         Game g = new Game(rows, cols); // X kezd
 
-        System.out.println(g.getCurrentPlayer()+ " következik\n");
-        g.playOneMove("a3");
+        // kezdő állapot: X már középen áll (f6)
+        System.out.println("Kezdő tábla (X középen):");
         System.out.println(g.getBoard());
-
         System.out.println(g.getCurrentPlayer()+ " következik\n");
-        g.playOneMove("b3");
-        System.out.println(g.getBoard());
 
+        // 1. lépés: O lép egy szomszédos mezőre - f5
+        String lep1 = "f5";
+        boolean ok1 = g.playOneMove(lep1);
+        System.out.println("Lépés: " + lep1 + ", sikeres? " + (ok1 ? "siker" : "nem sikerült"));
+        System.out.println(g.getBoard());
         System.out.println(g.getCurrentPlayer()+ " következik\n");
-        g.playOneMove("c3");
+
+        // 2. lépés: X lép egy másik szomszédra -  f4
+        String lep2 = "f4";
+        boolean ok2 = g.playOneMove(lep2);
+        System.out.println("Lépés: " + lep2 + ", sikeres? " + (ok2 ? "siker" : "nem sikerült"));
         System.out.println(g.getBoard());
+        System.out.println(g.getCurrentPlayer()+ " következik\n");
 
+        // BOT TESZT - botMove
+        System.out.println("Bot lépése:");
+        Position botPos = g.botMove();
+        if (botPos != null) {
+            System.out.println("Bot lépett:  " + botPos.toAlgebraic() + " "+botPos);
+        } else {
+            System.out.println("Bot nem tudott lépni.");
+        }
+        System.out.println(g.getBoard());
+        System.out.println(g.getCurrentPlayer()+ " következik\n");
 
-        // Szándékos failtest - foglaltmező trigger
-        String input = "c3";
+        // Szándékos failtest - foglaltmező trigger f5
+        String input = lep1; // "f5"
         boolean ok = g.playOneMove(input);
 
         if (!ok) {
-            Position pos = Position.converter(input);
-            System.out.println("Nem sikerült a lépés, mert foglalt: " + pos);
+            System.out.println("Nem sikerült a lépés, mert foglalt: " + input);
         }
+
+        // szomszéd nélküli lépés teszt a1 messze
+        String input2 = "a1";
+        boolean ok2b = g.playOneMove(input2);
+        if (!ok2b) {
+            System.out.println("Nem sikerült a lépés, mert nincs szomszéd: " + input2);
+        }
+
+        System.out.println("\nGame auto-start teszt");
+        Game game2 = new Game(rows, cols);
+        System.out.println(game2.getBoard());
 
         System.out.println("\nTeszt vége");
     }
