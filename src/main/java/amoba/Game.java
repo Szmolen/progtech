@@ -11,6 +11,10 @@ public class Game {
     private final List<Position> freePositions; // összes SZABAD mező
     private final Random rand = new Random();   // random a botnak
 
+    // játék vége flag + győztes
+    private boolean gameOver;         // true ha már vége a játéknak
+    private Player winner;            // ki nyert (ha null, akkor még nincs győztes vagy patt)
+
     // alapértelmezett játék - 10x10-es tábla
     public Game() {
         this(10, 10);
@@ -20,6 +24,8 @@ public class Game {
     public Game(int rows, int cols) {
         this.board = new Board(rows, cols);
         this.currentPlayer = Player.X; // X kezd
+        this.gameOver = false;
+        this.winner = null;
 
         // összes mezőt betesszük egy listába szabadnak
         freePositions = new ArrayList<>();
@@ -74,8 +80,65 @@ public class Game {
         return false; // sehol nincs szomszéd
     }
 
+    // 5 egymás mellett ellenőrzése
+    private boolean isWinningMove(Position pos, Player player) {
+        // 4 irány - vertikális, horizontális, két átló (bal, jobb)
+        int[][] directions = {
+                {1, 0},   // függőleges
+                {0, 1},   // vízszintes
+                {1, 1},   // főátló
+                {1, -1}   // mellékátló
+        };
+
+        for (int[] dir : directions) {
+            int dx = dir[0];
+            int dy = dir[1];
+
+            // induláskor 1, mert maga a most lerakott bábu is számít
+            int count = 1;
+
+            // egyik irányba számolunk
+            count += countDirection(pos, dx, dy, player);
+            // ellentétes irányba is
+            count += countDirection(pos, -dx, -dy, player);
+
+            if (count >= 5) {
+                return true; // találtunk legalább 5-öt egymás mellett
+            }
+        }
+        return false;
+    }
+
+    // adott irányban megszámoljuk, hány ugyanilyen bábu van egymás után
+    private int countDirection(Position start, int dx, int dy, Player player) {
+        int r = start.row() + dx;
+        int c = start.col() + dy;
+        int count = 0;
+
+        while (r >= 0 && r < board.rows()
+                && c >= 0 && c < board.cols()) {
+
+            Position p = new Position(r, c);
+            Player cell = board.get(p);
+
+            if (cell == player) {
+                count++;
+                r += dx;
+                c += dy;
+            } else {
+                break; // más jel vagy üres - vége a sorozatnak
+            }
+        }
+
+        return count;
+    }
+
     // lépés próba
     public boolean playOneMove(String input) {
+        // ha már vége a játéknak, nem lépünk tovább
+        if (gameOver) {
+            return false;
+        }
 
         Position pos = Position.converter(input);
 
@@ -91,15 +154,30 @@ public class Game {
 
         // minden pipa - letesszük a jelet
         board.place(pos, currentPlayer);
+
+        // win-check a mostani lépésre
+        if (isWinningMove(pos, currentPlayer)) {
+            gameOver = true;
+            winner = currentPlayer;
+        }
+
         freePositions.remove(pos);   // már nem szabad ez a mező
 
-        // játékos váltás
-        currentPlayer = currentPlayer.next();
+        // játékos váltás - csak ha még nincs vége
+        if (!gameOver) {
+            currentPlayer = currentPlayer.next();
+        }
+
         return true;
     }
 
     // BOT lép -  random választ az összes szabad hely közül - szomszédos
     public Position botMove() {
+
+        // ha már vége, a bot sem lép
+        if (gameOver) {
+            return null;
+        }
 
         // még1x check hogy a bot jön-e
         if (currentPlayer != Player.O) {
@@ -124,10 +202,19 @@ public class Game {
 
         // végrehajtjuk a lépést a táblán
         board.place(chosen, currentPlayer);
+
+        // win-check a bot lépésére
+        if (isWinningMove(chosen, currentPlayer)) {
+            gameOver = true;
+            winner = currentPlayer;
+        }
+
         freePositions.remove(chosen);  // globális szabad-listából is kivesszük
 
-        // kör vissza X-re
-        currentPlayer = currentPlayer.next();
+        // kör vissza X-re - csak ha nincs vége
+        if (!gameOver) {
+            currentPlayer = currentPlayer.next();
+        }
 
         return chosen; // visszaadjuk, hova lépett a bot (log, print)
     }
@@ -138,5 +225,15 @@ public class Game {
 
     public Player getCurrentPlayer() {
         return currentPlayer;
+    }
+
+    // játék vége getter
+    public boolean isGameOver() {
+        return gameOver;
+    }
+
+    // győztes getter - nullnál még nincs vége / patt
+    public Player getWinner() {
+        return winner;
     }
 }
