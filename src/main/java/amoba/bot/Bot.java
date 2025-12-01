@@ -5,12 +5,12 @@ import amoba.board.Position;
 import amoba.enums.Symbol;
 
 /**
- * Bot interface
+ * Bot interface.
  */
 public interface Bot {
 
     /**
-     * Bot pozicio valasztas board alapjan
+     * Bot pozicio valasztas board alapjan.
      *
      * @param board aktualis tabla
      * @param symbol milyen jellel lep (O)

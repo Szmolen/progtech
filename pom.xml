@@ -120,7 +120,13 @@
                         <goals><goal>report</goal></goals>
                     </execution>
                 </executions>
+                <configuration>
+                    <excludes>
+                        <exclude>amoba/Main.class</exclude>
+                    </excludes>
+                </configuration>
             </plugin>
+
 
             <!-- 5: Checkstyle -->
             <plugin>

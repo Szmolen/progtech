@@ -4,52 +4,62 @@ import amoba.enums.Symbol;
 
 /**
  * Egy mező a táblán.
- * Koordináta - POsition - mi van rajta Symbol
+ * Koordináta – Position – és hogy mi van rajta (Symbol).
  */
-public class Cell {
+public final class Cell {
 
     // a mező helye a táblán - sor - oszlop
+    /** A mező pozíciója (sor, oszlop). */
     private Position position;
 
-    // Symbl a a mezőn X, O, üres
+    // Symbol a mezőn: X, O vagy üres
+    /** A mezőn lévő szimbólum (X, O vagy EMPTY). */
     private Symbol symbol;
 
     /**
-     *  Konstruktor – mező helye + jel
+     * Konstruktor – mező helye + jel.
      *
-     * @param position pozíció sor - oszlop
-     * @param symbol Symbl a a mezőn X, O, üres
+     * @param pos pozíció sor - oszlop
+     * @param sym Symbol a mezőn (X, O, üres)
      */
-    public Cell(Position position, Symbol symbol) {
-        this.position = position;
-        this.symbol = symbol;
+    public Cell(final Position pos, final Symbol sym) {
+        this.position = pos;
+        this.symbol = sym;
     }
 
     /**
-     * Visszaadja a mező pozícióját
+     * Visszaadja a mező pozícióját.
+     *
+     * @return a mező pozíciója
      */
     public Position getPosition() {
         return position;
     }
 
     /**
-     * Beállítja a mező pozícióját
+     * Beállítja a mező pozícióját.
+     *
+     * @param pos új pozíció
      */
-    public void setPosition(Position position) {
-        this.position = position;
+    public void setPosition(final Position pos) {
+        this.position = pos;
     }
 
     /**
-     * Symbol az adott mezőn
+     * Symbol az adott mezőn.
+     *
+     * @return az adott mezőn lévő szimbólum
      */
     public Symbol getSymbol() {
         return symbol;
     }
 
     /**
-     * Set Symbl az adottmezőn
+     * Set Symbol az adott mezőn.
+     *
+     * @param sym az új szimbólum
      */
-    public void setSymbol(Symbol symbol) {
-        this.symbol = symbol;
+    public void setSymbol(final Symbol sym) {
+        this.symbol = sym;
     }
 }

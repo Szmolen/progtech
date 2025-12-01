@@ -9,14 +9,22 @@ import java.util.List;
 import java.util.Random;
 
 /**
- * random bot - teljesen veletlen valid poziciot valaszt
+ * Random bot - teljesen véletlen érvényes pozíciót választ.
  */
-public class RandomBot implements Bot {
+public final class RandomBot implements Bot {
 
+    /** Véletlenszám-generátor. */
     private final Random rand = new Random();
 
+    /**
+     * Választ egy véletlenszerű érvényes pozíciót a táblán.
+     *
+     * @param board tábla, amelyen a bot lép
+     * @param symbol a bot által lerakandó jel (O)
+     * @return egy véletlenszerű valid Position, vagy null ha nincs
+     */
     @Override
-    public Position chooseMove(Board board, Symbol symbol) {
+    public Position chooseMove(final Board board, final Symbol symbol) {
 
         // osszes valid lepes utilbol
         List<Position> validMoves = MoveRulesUtil.findValidMoves(board);

@@ -9,22 +9,25 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * Lepesszabaly util
- *  - benne van-e a pozicio a tablan
- *  - ures-e a mezo
- *  - van-e szomszed
- *  - osszes valid lepes keresese
+ * Lepesszabaly util.
+ *  - benne van-e a pozicio a tablan.
+ *  - ures-e a mezo.
+ *  - van-e szomszed.
+ *  - osszes valid lepes keresese.
  */
-public class MoveRulesUtil {
+public final class MoveRulesUtil {
+    private MoveRulesUtil() {
+        // utility class
+    }
 
     /**
-     * Pozicio - Tablahatar check, tablan vane
+     * Pozicio - Tablahatar check, tablan vane.
      *
      * @param board aktualis tabla
      * @param pos melyik pozicio
      * @return true ha a tabla hatarain belul van
      */
-    public static boolean isInside(Board board, Position pos) {
+    public static boolean isInside(final Board board, final Position pos) {
         int rows = board.getRowSize();
         int cols = board.getColSize();
 
@@ -35,13 +38,13 @@ public class MoveRulesUtil {
     }
 
     /**
-     * Pozicio - Tablahatar check, tablan kivul vane
+     * Pozicio - Tablahatar check, tablan kivul vane.
      *
      * @param board tabla
      * @param pos pozicio
      * @return true ha KIVUL van
      */
-    public static boolean isOutside(Board board, Position pos) {
+    public static boolean isOutside(final Board board, final Position pos) {
         return !isInside(board, pos);
     }
 
@@ -52,7 +55,7 @@ public class MoveRulesUtil {
      * @param pos pozicio
      * @return true ha a cella ures
      */
-    public static boolean isEmpty(Board board, Position pos) {
+    public static boolean isEmpty(final Board board, final Position pos) {
         if (isOutside(board, pos)) {
             return false; // kivul
         }
@@ -65,13 +68,13 @@ public class MoveRulesUtil {
     }
 
     /**
-     * Szomszed check
+     * Szomszed check.
      *
      * @param board tabla
      * @param pos pozicio amit nezunk
      * @return true ha van foglalt szomszed
      */
-    public static boolean hasNeighbor(Board board, Position pos) {
+    public static boolean hasNeighbor(final Board board, final Position pos) {
         int[] dirs = {-1, 0, 1};
 
         for (int dx : dirs) {
@@ -105,14 +108,14 @@ public class MoveRulesUtil {
     }
 
     /**
-     * Osszes valid lepes keresese:
+     * Osszes valid lepes keresese.
      *  - ures mezo
      *  - van szomszed
      *
      * @param board aktualis tabla
      * @return lista az open poziciokrol
      */
-    public static List<Position> findValidMoves(Board board) {
+    public static List<Position> findValidMoves(final Board board) {
         List<Position> result = new ArrayList<>();
 
         int rows = board.getRowSize();

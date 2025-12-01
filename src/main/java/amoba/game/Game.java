@@ -11,42 +11,54 @@ import amoba.util.MoveRulesUtil;
 import amoba.util.PositionUtil;
 
 /**
- * Game  - tablainfo, jatekosok, lepesek, win-check, bot, usernév
+ * Game  - tablainfo, jatekosok, lepesek, win-check, bot, usernev.
  */
-public class Game {
+public final class Game {
+
+    /** Default tabla sorok szama. */
+    private static final int DEFAULT_ROWS = 10;
+
+    /** Default tabla oszlopok szama. */
+    private static final int DEFAULT_COLS = 10;
 
     // tabla
+    /** A jatektabla. */
     private final Board board;
 
     // ket jatekos index - 0 = X, 1 = O
+    /** A ket jatekos tombje: 0 = X, 1 = O. */
     private final Player[] players = new Player[2];
 
     // eppen hanyas indexu jatekos jon (0 vagy 1)
+    /** Eppen hanyas indexu jatekos jon (0 vagy 1). */
     private int currentIndex = 0;
 
     // randombot set
+    /** Az aktualisan hasznalt bot implementacio. */
     private Bot bot = new RandomBot();
 
     // jatek vege, gyoztes
+    /** Jatek vege flag. */
     private boolean gameOver;
+
+    /** A gyoztes jatekos, vagy null ha meg nincs / patt. */
     private Player winner;
 
     /**
-     * Alap konstruktorok - 10x10
+     * Alap konstruktorok - 10x10.
      */
     public Game() {
-        this(10, 10, "Mr X");
-
+        this(DEFAULT_ROWS, DEFAULT_COLS, "Mr X");
     }
 
     /**
-     * Altalanos konstruktor - custom siz sor oszlop
+     * Altalanos konstruktor - custom size sor oszlop.
      *
      * @param rows sorok szama
      * @param cols oszlopok szama
      * @param playerXName player neve
      */
-    public Game(int rows, int cols, String playerXName) {
+    public Game(final int rows, final int cols, final String playerXName) {
         this.board = new Board(rows, cols);
 
         String effectiveName = (playerXName == null || playerXName.isBlank())
@@ -62,12 +74,17 @@ public class Game {
         placeStartingX();
     }
 
-
     /**
-     * Privat konstruktor - betoltott tablahoz
+     * Privat konstruktor - betoltott tablahoz.
+     *
+     * @param loadedBoard betoltott tabla
+     * @param nextSymbol kovetkezo jatekos jele
+     * @param playerXName X jatekos neve
      */
-    private Game(Board board, Symbol nextSymbol, String playerXName) {
-        this.board = board;
+    private Game(final Board loadedBoard,
+                 final Symbol nextSymbol,
+                 final String playerXName) {
+        this.board = loadedBoard;
 
         String effectiveName = (playerXName == null || playerXName.isBlank())
                 ? "Mr X"
@@ -83,57 +100,76 @@ public class Game {
         this.currentIndex = (nextSymbol == Symbol.X) ? 0 : 1;
     }
 
-
     /**
-     * Betoltott jatek letrehozasa - GameSaveLoad utilra
+     * Betoltott jatek letrehozasa - GameSaveLoad utilra.
+     *
+     * @param board betoltott tabla
+     * @param nextSymbol kovetkezo jatekos jele
+     * @param playerXName X jatekos neve
+     * @return uj Game a betoltott allapottal
      */
-    public static Game fromLoadedState(Board board, Symbol nextSymbol, String playerXName) {
+    public static Game fromLoadedState(final Board board,
+                                       final Symbol nextSymbol,
+                                       final String playerXName) {
         return new Game(board, nextSymbol, playerXName);
     }
 
     /**
-     * Bot strategia allitasa - pl. teszthez vagy masik bothoz
+     * Bot strategia allitasa - pl. teszthez vagy masik bothoz.
+     *
+     * @param botStrategy uj bot implementacio
      */
-    public void setBot(Bot bot) {
-        this.bot = bot;
+    public void setBot(final Bot botStrategy) {
+        this.bot = botStrategy;
     }
 
     /**
-     * Aktualis jatekos
+     * Aktualis jatekos.
+     *
+     * @return az eppen kovetkezo jatekos
      */
     public Player getCurrentPlayer() {
         return players[currentIndex];
     }
 
     /**
-     * getboard
+     * getBoard.
+     *
+     * @return a jatektabla
      */
     public Board getBoard() {
         return board;
     }
 
     /**
-     * Jatek vege flag
+     * Jatek vege flag.
+     *
+     * @return true, ha vege a jateknak
      */
     public boolean isGameOver() {
         return gameOver;
     }
 
     /**
-     * Gyoztes lekerese -- null - nincs még / patt
+     * Gyoztes lekerese -- null - nincs meg / patt.
+     *
+     * @return a gyoztes jatekos vagy null
      */
     public Player getWinner() {
         return winner;
     }
+
     /**
-     * X játékos (index 0) – név mentéshez
+     * X jatekos (index 0) – nev menteshez.
+     *
+     * @return az X jatekos
      */
     public Player getXPlayer() {
         return players[0];
     }
 
     /**
-     * X kozepre, valtas O ra
+     * X kozepre, valtas O-ra.
      */
     private void placeStartingX() {
         int centerRow = board.getRowSize() / 2;
@@ -151,9 +187,12 @@ public class Game {
     }
 
     /**
-     * Cella lekerese egy Position alapjan
+     * Cella lekerese egy Position alapjan.
+     *
+     * @param pos melyik pozicion levo cella kell
+     * @return a keresett Cell
      */
-    private Cell getCellAt(Position pos) {
+    private Cell getCellAt(final Position pos) {
         int rows = board.getRowSize();
         int cols = board.getColSize();
 
@@ -161,7 +200,9 @@ public class Game {
         int c = pos.getCol();
 
         if (r < 0 || r >= rows || c < 0 || c >= cols) {
-            throw new IllegalArgumentException("Pozicio kivul esik a tablan: Sor=" + r + " Oszlop=" + c);
+            String message = "Pozicio kivul esik a tablan: "
+                    + "Sor=" + r + " Oszlop=" + c;
+            throw new IllegalArgumentException(message);
         }
 
         int index = r * cols + c;
@@ -169,12 +210,12 @@ public class Game {
     }
 
     /**
-     * Move - karakter placement a boardra
+     * Move - karakter placement a boardra.
      *
-     * @param input pl f5
+     * @param input pl. "f5"
      * @return true ha sikeres a lepes, false ha nem
      */
-    public boolean playOneMove(String input) {
+    public boolean playOneMove(final String input) {
         if (gameOver) {
             return false;
         }
@@ -183,7 +224,8 @@ public class Game {
         try {
             pos = PositionUtil.fromAlgebraic(input);
         } catch (IllegalArgumentException e) {
-            return false; // formatum hiba
+            // formatum hiba
+            return false;
         }
 
         // tabla-hatar check
@@ -196,7 +238,7 @@ public class Game {
             return false;
         }
 
-        // szomszed check - kivéve autoplacement midre
+        // szomszed check - kiveve autoplacement midre
         if (!MoveRulesUtil.hasNeighbor(board, pos)) {
             return false;
         }
@@ -223,16 +265,16 @@ public class Game {
     }
 
     /**
-     * BOT lepes -  RandomBottal
+     * BOT lepes - RandomBottal.
      *
-     * @return bot cell, vagy null ha nem tud lepni
+     * @return bot altal lepett pozicio, vagy null ha nem tud lepni
      */
     public Position botMove() {
         if (gameOver) {
             return null;
         }
 
-        // bot csak O symbol körnél lép
+        // bot csak O symbol korben lep
         if (getCurrentPlayer().getSelectedSymbol() != Symbol.O) {
             return null;
         }

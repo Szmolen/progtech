@@ -11,21 +11,37 @@ import java.text.SimpleDateFormat;
 import java.util.List;
 
 /**
- * Game save / load util
+ * Game save / load util.
+ *
  * Itt van a fajlkezeles, a Game csak a jatekmenettel foglalkozik.
  */
-public class GameSaveLoad {
+public final class GameSaveLoad {
 
-    /**
-     * Jatek mentese fileba
-     * Formatum:
-     *  elso sor:  rows cols nextSymbol playerName
-     *  utana soronkent a tabla X,O,· jelekkel
-     *
-     * @param game melyik jatekot mentjuk
-     * @param path fajlnev "board.txt"
-     */
-    public static void saveGame(Game game, String path) {
+    /** Minimum elvart elemek szama a header sorban. */
+    private static final int MIN_HEADER_PARTS = 3;
+
+    /** Index, ahonnan a jatekosnev resze kezdodik a headerben. */
+    private static final int NAME_START_INDEX = 3;
+
+    /** Hany elem felett biztosan van jatekosnev a headerben. */
+    private static final int NAME_PRESENT_PARTS = 4;
+
+
+    private GameSaveLoad() {
+        // utility class
+    }
+
+        /**
+         * Jatek mentese fileba.
+         * Formatum:
+         *  elso sor:  rows cols nextSymbol playerName
+         *  utana soronkent a tabla X,O,· jelekkel
+         *
+         * @param game melyik jatekot mentjuk
+         * @param path fajlnev "board.txt"
+         */
+    public static void saveGame(final Game game, final String path) {
+
         try {
             Board board = game.getBoard();
             Symbol nextSymbol = game.getCurrentPlayer().getSelectedSymbol();
@@ -67,12 +83,12 @@ public class GameSaveLoad {
             Files.writeString(Path.of(path), sb.toString());
 
         } catch (Exception e) {
-            throw new RuntimeException("Hiba a jatek mentese kozben: " + e.getMessage(), e);
+            throw new RuntimeException("Hiba mentésnél " + e.getMessage(), e);
         }
     }
 
     /**
-     * Jatek betoltese filbol
+     * Jatek betoltese filbol.
      * Formatum:
      *  elso sor:  rows cols nextSymbol playerName
      *  utana soronkent a tabla X,O,· jelekkel
@@ -80,7 +96,7 @@ public class GameSaveLoad {
      * @param path fajlnev "board.txt"
      * @return uj Game objektum a betoltott allapottal
      */
-    public static Game loadGame(String path) {
+    public static Game loadGame(final String path) {
         try {
             List<String> lines = Files.readAllLines(Path.of(path));
 
@@ -91,7 +107,7 @@ public class GameSaveLoad {
             // elso sor: size + kovi jatekos + nev
             String header = lines.get(0).trim();
             String[] parts = header.split("\\s+");
-            if (parts.length < 3) {
+            if (parts.length < MIN_HEADER_PARTS) {
                 throw new IllegalArgumentException("Hibas elso sor: " + header);
             }
 
@@ -101,10 +117,10 @@ public class GameSaveLoad {
 
             // playerName (ha a headerben benne van)
             String playerName = "Mr X";
-            if (parts.length >= 4) {
+            if (parts.length >= NAME_PRESENT_PARTS) {
                 StringBuilder nameBuilder = new StringBuilder();
-                for (int i = 3; i < parts.length; i++) {
-                    if (i > 3) {
+                for (int i = NAME_START_INDEX; i < parts.length; i++) {
+                    if (i > NAME_START_INDEX) {
                         nameBuilder.append(" ");
                     }
                     nameBuilder.append(parts[i]);
@@ -118,7 +134,7 @@ public class GameSaveLoad {
             for (int r = 0; r < rows; r++) {
                 String line = lines.get(r + 1);
                 if (line.length() < cols) {
-                    throw new IllegalArgumentException("Tul rovid sor a fajlban: " + line);
+                    throw new IllegalArgumentException("Rovid sor: " + line);
                 }
 
                 for (int c = 0; c < cols; c++) {
@@ -131,9 +147,8 @@ public class GameSaveLoad {
                         board.setCellSymbol(cell, Symbol.X);
                     } else if (ch == 'O') {
                         board.setCellSymbol(cell, Symbol.O);
-                    } else {
-                        // minden mas: ures marad (EMPTY)
                     }
+                        // minden mas: ures marad (EMPTY)
                 }
             }
 
@@ -141,17 +156,21 @@ public class GameSaveLoad {
             return Game.fromLoadedState(board, nextSymbol, playerName);
 
         } catch (Exception e) {
-            throw new RuntimeException("Hiba a jatek betoltese kozben: " + e.getMessage(), e);
+            throw new RuntimeException("Betöltési hiba: " + e.getMessage(), e);
         }
     }
 
     /**
-     * Mentés meta-infó lekérése a főmenühöz:
-     *  - létezik-e a file
-     *  - utolsó mentés ideje
-     *  - X játékos neve
+     * Mentes meta-info lekerese a fomenuhoz.
+     *  - letezik-e a file
+     *  - utolso mentes ideje
+     *  - X jatekos neve
+     *
+     * @param path fajlnev "board.txt"
+     * @return SaveInfo, benne a letezes, ido es jatekosnev
      */
-    public static SaveInfo getSaveInfo(String path) {
+    public static SaveInfo getSaveInfo(final String path) {
+
         try {
             Path p = Path.of(path);
 
@@ -160,7 +179,8 @@ public class GameSaveLoad {
             }
 
             long lastMod = Files.getLastModifiedTime(p).toMillis();
-            String formatted = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(lastMod);
+            SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
+            String formatted = sdf.format(lastMod);
 
             List<String> lines = Files.readAllLines(p);
             if (lines.isEmpty()) {
@@ -171,10 +191,10 @@ public class GameSaveLoad {
             String[] parts = header.split("\\s+");
 
             String playerName = "Mr X";
-            if (parts.length >= 4) {
+            if (parts.length >= NAME_PRESENT_PARTS) {
                 StringBuilder sb = new StringBuilder();
-                for (int i = 3; i < parts.length; i++) {
-                    if (i > 3) {
+                for (int i = NAME_START_INDEX; i < parts.length; i++) {
+                    if (i > NAME_START_INDEX) {
                         sb.append(" ");
                     }
                     sb.append(parts[i]);

@@ -89,4 +89,41 @@ class GameSaveLoadTest {
         assertThrows(RuntimeException.class,
                 () -> GameSaveLoad.loadGame("magic_file.txt"));
     }
+    @Test
+    void testGetSaveInfo_NoFile() throws Exception {
+        String path = "nonexistent_save_test.txt";
+
+        SaveInfo info = GameSaveLoad.getSaveInfo(path);
+
+        assertFalse(info.exists());
+        assertNull(info.lastModified());
+        assertNull(info.playerName());
+    }
+    @Test
+    void testGetSaveInfo_EmptyFile() throws Exception {
+        Path temp = Files.createTempFile("saveinfo_empty", ".txt");
+        Files.writeString(temp, "");
+
+        SaveInfo info = GameSaveLoad.getSaveInfo(temp.toString());
+
+        assertFalse(info.exists());
+        assertNull(info.lastModified());
+        assertNull(info.playerName());
+    }
+    @Test
+    void testGetSaveInfo_MultiWordName() throws Exception {
+        Path temp = Files.createTempFile("saveinfo_name", ".txt");
+
+        // 10 10 X Imre Gergo
+        Files.writeString(temp, "10 10 X Imre Gergo\n....\n");
+
+        SaveInfo info = GameSaveLoad.getSaveInfo(temp.toString());
+
+        assertTrue(info.exists());
+        assertEquals("Imre Gergo", info.playerName());
+        assertNotNull(info.lastModified());
+    }
+
+
+
 }
