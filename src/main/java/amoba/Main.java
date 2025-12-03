@@ -1,5 +1,6 @@
 package amoba;
 
+import amoba.db.ScoreService;
 import amoba.board.Position;
 import amoba.enums.Symbol;
 import amoba.game.Game;
@@ -53,25 +54,32 @@ public final class Main {
      */
     public static void main(final String[] args) {
 
+        // repo up meg DB init
+        ScoreService scoreService = new ScoreService();
+
         Scanner sc = new Scanner(System.in);
 
-        Game game = showStartMenuAndCreateGame(sc);
+        Game game = showStartMenuAndCreateGame(sc, scoreService);
         if (game == null) {
             // user kilepett a menubol
             return;
         }
 
         runGameLoop(sc, game);
-        handleGameEnd(game);
+        handleGameEnd(game, scoreService);
     }
 
     /**
      * Startmenu kirajzolasa es jatek letrehozasa / betoltese.
      *
      * @param sc scanner a konzol inputhoz
+     * @param scoreService leaderboardhoz logikai service
      * @return letrehozott vagy betoltott Game, vagy null ha q a choice
      */
-    private static Game showStartMenuAndCreateGame(final Scanner sc) {
+    private static Game showStartMenuAndCreateGame(
+            final Scanner sc,
+            final ScoreService scoreService) {
+
         // mentes info a menuhoz
         SaveInfo info = GameSaveLoad.getSaveInfo(DEFAULT_SAVE);
 
@@ -140,6 +148,13 @@ public final class Main {
                     }
                     break;
 
+                case "4":
+                    // csak leaderboard megjelenitese, jatek meg nincs
+                    scoreService.printHighScores();
+                    // utana ujra kirajzoljuk a menut
+                    printMainMenu(info);
+                    break;
+
                 case "q":
                     System.out.println("Kilepes...");
                     return null;
@@ -170,6 +185,8 @@ public final class Main {
                     + info.playerName()
                     + ")");
         }
+
+        System.out.println("4) Leaderboard");
 
         System.out.println("q) Kilepes");
         System.out.print("Valassz: ");
@@ -259,9 +276,11 @@ public final class Main {
     /**
      * Jatek vege utani kezeles: mentes torles, vegso tabla, gyoztes kiirasa.
      *
-     * @param game az aktualis jatek
+     * @param game         az aktualis jatek
+     * @param scoreService leaderboardhoz logikai service
      */
-    private static void handleGameEnd(final Game game) {
+    private static void handleGameEnd(final Game game,
+                                      final ScoreService scoreService) {
         // ===========================
         // GAME END
         // ===========================
@@ -283,6 +302,7 @@ public final class Main {
 
         if (game.getWinner() != null) {
             System.out.println("Gyoztes: " + game.getWinner());
+            scoreService.recordGameResult(game);
         } else {
             System.out.println("Dontetlen.");
         }
